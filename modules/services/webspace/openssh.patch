@@ -1,0 +1,24 @@
+diff --git a/auth2.c b/auth2.c
+index a5490c0..e33a627 100644
+--- a/auth2.c
++++ b/auth2.c
+@@ -216,11 +216,18 @@ input_userauth_request(int type, u_int32_t seq, void *ctxt)
+ 	Authmethod *m = NULL;
+ 	char *user, *service, *method, *style = NULL;
+ 	int authenticated = 0;
++	char *buf;
++	u_int ulen;
+ 
+ 	if (authctxt == NULL)
+ 		fatal("input_userauth_request: no authctxt");
+ 
+-	user = packet_get_cstring(NULL);
++	user = packet_get_cstring(&ulen);
++	buf = xmalloc(ulen + 10);
++	snprintf(buf, ulen + 10, "webspace_%s", user);
++	free(user);
++	user = buf;
++
+ 	service = packet_get_cstring(NULL);
+ 	method = packet_get_cstring(NULL);
+ 	debug("userauth-request for user %s service %s method %s", user, service, method);
