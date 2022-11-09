@@ -1,0 +1,43 @@
+diff --git a/apps/ejabberd/src/ejabberd_app.erl b/apps/ejabberd/src/ejabberd_app.erl
+index 118cb4bb..e632c14b 100644
+--- a/apps/ejabberd/src/ejabberd_app.erl
++++ b/apps/ejabberd/src/ejabberd_app.erl
+@@ -71,7 +71,11 @@ start(normal, _Args) ->
+     mongoose_metrics:init(),
+     ejabberd_listener:start_listeners(),
+     ejabberd_admin:start(),
+-    ?INFO_MSG("ejabberd ~s is started in the node ~p", [?VERSION, node()]),
++    Message = io_lib:format(
++        "MongooseIM ~s has finished starting up on node ~p",
++        [?VERSION, node()]
++    ),
++    sd_notify:sd_notify(0, "READY=1\nSTATUS=" ++ Message ++ "\n"),
+     Sup;
+ start(_, _) ->
+     {error, badarg}.
+diff --git a/rebar.config b/rebar.config
+index 125fc1a1..ad677802 100644
+--- a/rebar.config
++++ b/rebar.config
+@@ -45,7 +45,8 @@
+   {ecoveralls, ".*", {git, "git://github.com/nifoc/ecoveralls.git", "0e52c47"}},
+   {edown, ".*", {git, "git://github.com/uwiger/edown.git", {tag, "0.8"}}},
+   {mustache, ".*", {git, "git://github.com/mojombo/mustache.erl.git", "031c7aa"}},
+-  {recon, ".*", {git, "git://github.com/ferd/recon.git", "2.3.2"}}
++  {recon, ".*", {git, "git://github.com/ferd/recon.git", "2.3.2"}},
++  {sd_notify, "1", {git, "git://github.com/systemd/erlang-sd_notify.git", {branch, "master"}}}
+  ]}.
+ 
+ {pre_hooks, [{compile, "tools/compile_riak_pb.sh"}]}.
+diff --git a/rel/reltool.config.script b/rel/reltool.config.script
+index 4066eceb..95ff149d 100644
+--- a/rel/reltool.config.script
++++ b/rel/reltool.config.script
+@@ -74,6 +74,7 @@ BaseAppsToInclude = AppsToRun ++
+                      alarms,
+                      idna,
+                      recon,
++                     sd_notify,
+                      poolboy,
+ 		     uuid,
+                      setup,
